@@ -96,10 +96,14 @@ public final class EncodeWavToFlac {
 				throw new RuntimeException("Invalid block align value");
 			if (bytesPerSample * numChannels * sampleRate != byteRate)
 				throw new RuntimeException("Invalid byte rate value");
-			
-			// Handle the data chunk
-			if (!readString(in, 4).equals("data"))
-				throw new DataFormatException("Unrecognized WAV file chunk");
+
+			// Handle (& find) the data chunk
+			while (!readString(in, 4).equals("data")) {
+                int sectionLen = readLittleUint(in, 4);
+                readLittleUint(in, sectionLen);
+				// FIXME: check that sectionLen is in bounds?
+                // throw new DataFormatException("Unrecognized WAV file chunk");
+            }
 			int sampleDataLen = readLittleUint(in, 4);
 			if (sampleDataLen <= 0 || sampleDataLen % (numChannels * bytesPerSample) != 0)
 				throw new DataFormatException("Invalid length of audio sample data");
@@ -135,7 +139,7 @@ public final class EncodeWavToFlac {
 			info.write(true, out);
 			
 			// Encode all frames
-			new FlacEncoder(info, samples, 4096, SubframeEncoder.SearchOptions.SUBSET_BEST, out);
+			new FlacEncoder(info, samples, 224, SubframeEncoder.SearchOptions.SUBSET_EMBEDDED, out);
 			out.flush();
 			
 			// Rewrite the stream info metadata block, which is

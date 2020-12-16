@@ -129,6 +129,7 @@ final class RiceEncoder {
 			}
 		}
 		
+        /*
 		// Use Rice coding
 		for (int param = 0; param <= 14; param++) {
 			long size = 4;
@@ -145,6 +146,7 @@ final class RiceEncoder {
 				bestParam = param;
 			}
 		}
+        */
 		return bestSize << 6 | bestParam;
 	}
 	
